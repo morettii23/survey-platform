@@ -5,7 +5,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>📋 Мои опросы</h2>
-    <a href="{{ url_for('create_survey') }}" class="btn btn-success">➕ Создать опрос</a>
+    <a href="{{ url_for('main.') }}" class="btn btn-success">➕ Создать опрос</a>
 </div>
 <hr>
 
@@ -25,19 +25,19 @@
                     <small class="text-muted">📅 {{ survey.created_at.strftime('%d.%m.%Y') }}</small>
                 </div>
                 <div class="card-footer bg-transparent">
-                    <a href="{{ url_for('take_survey', survey_id=survey.id) }}" class="btn btn-sm btn-primary">📝 Пройти</a>
-                    <a href="{{ url_for('results', survey_id=survey.id) }}" class="btn btn-sm btn-outline-secondary">📊 Результаты</a>
-                    <a href="{{ url_for('toggle_survey', survey_id=survey.id) }}" class="btn btn-sm {% if survey.is_active %}btn-warning{% else %}btn-success{% endif %}">
+                    <a href="{{ url_for('main.take_survey', survey_id=survey.id) }}" class="btn btn-sm btn-primary">📝 Пройти</a>
+                    <a href="{{ url_for('main.results', survey_id=survey.id) }}" class="btn btn-sm btn-outline-secondary">📊 Результаты</a>
+                    <a href="{{ url_for('main.toggle_survey', survey_id=survey.id) }}" class="btn btn-sm {% if survey.is_active %}btn-warning{% else %}btn-success{% endif %}">
                         {% if survey.is_active %}🔒 Закрыть{% else %}🔓 Открыть{% endif %}
                     </a>
-                    <a href="{{ url_for('delete_survey', survey_id=survey.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Удалить опрос?')">🗑️</a>
+                    <a href="{{ url_for('main.delete_survey', survey_id=survey.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Удалить опрос?')">🗑️</a>
                 </div>
             </div>
         </div>
     {% else %}
         <div class="col-12">
             <div class="alert alert-info">
-                У вас пока нет созданных опросов. <a href="{{ url_for('create_survey') }}">Создайте первый!</a>
+                У вас пока нет созданных опросов. <a href="{{ url_for('main.') }}">Создайте первый!</a>
             </div>
         </div>
     {% endfor %}

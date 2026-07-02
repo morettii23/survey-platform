@@ -24,13 +24,13 @@
     {% else %}
         <div class="col-12">
             <div class="alert alert-info">
-                Пока нет опросов. <a href="{{ url_for('main.create_survey') }}">Создайте первый!</a>
+                Пока нет опросов. <a href="{{ url_for('main.') }}">Создайте первый!</a>
             </div>
         </div>
     {% endfor %}
 </div>
 
 <div class="mt-4 text-center">
-    <a href="{{ url_for('main.create_survey') }}" class="btn btn-success">➕ Создать опрос</a>
+    <a href="{{ url_for('main.') }}" class="btn btn-success">➕ Создать опрос</a>
 </div>
 {% endblock %}

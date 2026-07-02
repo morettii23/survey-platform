@@ -9,7 +9,7 @@
         <p class="text-muted">{{ survey.description }}</p>
         <hr>
         
-        <form method="POST" action="{{ url_for('vote', survey_id=survey.id) }}" id="surveyForm">
+        <form method="POST" action="{{ url_for('main.vote', survey_id=survey.id) }}" id="surveyForm">
             {% for question in survey.questions|sort(attribute='order') %}
                 <div class="card mb-4">
                     <div class="card-header">
@@ -42,7 +42,7 @@
             
             <div class="text-center">
                 <button type="submit" class="btn btn-success btn-lg">✅ Отправить ответы</button>
-                <a href="{{ url_for('index') }}" class="btn btn-secondary">Назад</a>
+                <a href="{{ url_for('main.') }}" class="btn btn-secondary">Назад</a>
             </div>
         </form>
     </div>
