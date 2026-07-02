@@ -24,14 +24,13 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# Импортируем маршруты ПОСЛЕ создания app
 from routes import *
 
+# Создаём таблицы ПРАВИЛЬНО — внутри контекста
 with app.app_context():
-    try:
-        db.create_all()
-        print('✅ База данных готова')
-    except Exception as e:
-        print(f'⚠️ Ошибка БД: {e}')
+    db.create_all()
+    print('✅ База данных готова')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
