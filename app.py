@@ -10,6 +10,7 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'super-secret-key-12345')
+# Используем SQLite по умолчанию, если DATABASE_URL не задана
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///surveys.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -23,20 +24,25 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# Импортируем маршруты после создания app
 from routes import *
 
+# Создаём таблицы и админа при запуске
 with app.app_context():
     try:
         db.create_all()
-        print('✅ База данных готова')
+        print('✅ База данных готова (SQLite)')
 
+        # Проверяем, есть ли админ
         admin = User.query.filter_by(email='tuxigoww@bk.ru').first()
         if admin:
+            # Если есть — обновляем пароль и роль
             admin.password = generate_password_hash('Admin1234')
             admin.role = 'admin'
             db.session.commit()
             print(f'✅ Админ обновлён: {admin.email}')
         else:
+            # Если нет — создаём
             admin = User(
                 username='admin',
                 email='tuxigoww@bk.ru',
