@@ -300,9 +300,6 @@ def delete_survey(survey_id):
         logger.error(f'Ошибка в delete_survey: {str(e)}')
         flash('Ошибка удаления', 'danger')
         return redirect(url_for('my_surveys'))
-
-# ===== АДМИН-МАРШРУТЫ =====
+    # ===== АДМИН-МАРШРУТЫ =====
 from admin_routes import admin_bp
 app.register_blueprint(admin_bp)
-with app.app_context():
-    db.create_all()
