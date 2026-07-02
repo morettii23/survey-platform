@@ -5,7 +5,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>📋 Мои опросы</h2>
-    <a href="{{ url_for('main.') }}" class="btn btn-success">➕ Создать опрос</a>
+    <a href="{{ url_for('main.index') }}" class="btn btn-success">➕ Создать опрос</a>
 </div>
 <hr>
 
@@ -37,7 +37,7 @@
     {% else %}
         <div class="col-12">
             <div class="alert alert-info">
-                У вас пока нет созданных опросов. <a href="{{ url_for('main.') }}">Создайте первый!</a>
+                У вас пока нет созданных опросов. <a href="{{ url_for('main.index') }}">Создайте первый!</a>
             </div>
         </div>
     {% endfor %}
