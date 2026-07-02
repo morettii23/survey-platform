@@ -32,10 +32,16 @@ with app.app_context():
         db.create_all()
         print('✅ База данных готова')
 
-        # Автоматически создаём админа
         from werkzeug.security import generate_password_hash
-        admin = User.query.filter_by(email='tuxigoww@bk.ru').first()
-        if not admin:
+        user = User.query.filter_by(email='tuxigoww@bk.ru').first()
+        if user:
+            # Если пользователь есть — обновляем пароль и делаем админом
+            user.password = generate_password_hash('Admin1234')
+            user.role = 'admin'
+            db.session.commit()
+            print(f'✅ Пользователь {user.email} обновлён: пароль Admin1234, роль admin')
+        else:
+            # Если нет — создаём
             admin = User(
                 username='admin',
                 email='tuxigoww@bk.ru',
@@ -45,13 +51,6 @@ with app.app_context():
             db.session.add(admin)
             db.session.commit()
             print('✅ Админ создан: tuxigoww@bk.ru / Admin1234')
-        else:
-            if admin.role != 'admin':
-                admin.role = 'admin'
-                db.session.commit()
-                print(f'✅ Пользователь {admin.email} теперь админ')
-            else:
-                print('ℹ️ Админ уже существует')
 
     except Exception as e:
         print(f'⚠️ Ошибка при инициализации БД: {e}')
