@@ -23,21 +23,19 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# === ИМПОРТ МАРШРУТОВ ПОСЛЕ СОЗДАНИЯ app ===
 from routes import *
 
-# === СОЗДАНИЕ/ОБНОВЛЕНИЕ АДМИНА ===
 with app.app_context():
     try:
         db.create_all()
         print('✅ База данных готова')
-
+        
         admin = User.query.filter_by(email='tuxigoww@bk.ru').first()
         if admin:
             admin.password = generate_password_hash('Admin1234')
             admin.role = 'admin'
             db.session.commit()
-            print(f'✅ Админ обновлён: {admin.email}')
+            print(f'✅ Админ обновлён: tuxigoww@bk.ru')
         else:
             admin = User(
                 username='admin',
@@ -49,7 +47,7 @@ with app.app_context():
             db.session.commit()
             print('✅ Админ создан: tuxigoww@bk.ru / Admin1234')
     except Exception as e:
-        print(f'⚠️ Ошибка: {e}')
+        print(f'⚠️ Ошибка при инициализации БД: {e}')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
