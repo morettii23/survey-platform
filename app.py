@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from models import db, User
 import os
+import sys
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,13 +25,20 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Импортируем маршруты ПОСЛЕ создания app
-from routes import *
+try:
+    from routes import *
+    print('✅ Маршруты загружены')
+except Exception as e:
+    print(f'❌ Ошибка загрузки маршрутов: {e}')
+    sys.exit(1)
 
-# Создаём таблицы ПРАВИЛЬНО — внутри контекста
 with app.app_context():
-    db.create_all()
-    print('✅ База данных готова')
+    try:
+        db.create_all()
+        print('✅ База данных готова')
+    except Exception as e:
+        print(f'❌ Ошибка БД: {e}')
+        sys.exit(1)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
