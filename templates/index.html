@@ -16,21 +16,21 @@
                     <p><small class="text-muted">👤 {{ survey.creator.username }} • 📅 {{ survey.created_at.strftime('%d.%m.%Y') }}</small></p>
                 </div>
                 <div class="card-footer bg-transparent">
-                    <a href="{{ url_for('take_survey', survey_id=survey.id) }}" class="btn btn-sm btn-primary">📝 Пройти</a>
-                    <a href="{{ url_for('results', survey_id=survey.id) }}" class="btn btn-sm btn-outline-secondary">📊 Результаты</a>
+                    <a href="{{ url_for('main.take_survey', survey_id=survey.id) }}" class="btn btn-sm btn-primary">📝 Пройти</a>
+                    <a href="{{ url_for('main.results', survey_id=survey.id) }}" class="btn btn-sm btn-outline-secondary">📊 Результаты</a>
                 </div>
             </div>
         </div>
     {% else %}
         <div class="col-12">
             <div class="alert alert-info">
-                Пока нет опросов. <a href="{{ url_for('create_survey') }}">Создайте первый!</a>
+                Пока нет опросов. <a href="{{ url_for('main.create_survey') }}">Создайте первый!</a>
             </div>
         </div>
     {% endfor %}
 </div>
 
 <div class="mt-4 text-center">
-    <a href="{{ url_for('create_survey') }}" class="btn btn-success">➕ Создать опрос</a>
+    <a href="{{ url_for('main.create_survey') }}" class="btn btn-success">➕ Создать опрос</a>
 </div>
 {% endblock %}
