@@ -29,13 +29,13 @@ with app.app_context():
     try:
         db.create_all()
         print('✅ База данных готова')
-        
+
         admin = User.query.filter_by(email='tuxigoww@bk.ru').first()
         if admin:
             admin.password = generate_password_hash('Admin1234')
             admin.role = 'admin'
             db.session.commit()
-            print(f'✅ Админ обновлён: tuxigoww@bk.ru')
+            print(f'✅ Админ обновлён: {admin.email}')
         else:
             admin = User(
                 username='admin',
