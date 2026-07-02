@@ -6,6 +6,15 @@ from models import db, User
 import os
 from dotenv import load_dotenv
 from logger import setup_logger
+from app import app, db
+
+# Добавь ЭТУ функцию
+def init_db():
+    with app.app_context():
+        db.create_all()
+        print("✅ База данных создана")
+
+init_db()
 
 load_dotenv()
 
