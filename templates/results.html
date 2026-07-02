@@ -11,7 +11,7 @@
         
         <div class="mb-3">
             <span class="badge bg-primary">Всего ответов: {{ total_answers }}</span>
-            <a href="{{ url_for('export_results', survey_id=survey.id) }}" class="btn btn-sm btn-outline-success float-end">📥 Экспорт CSV</a>
+            <a href="{{ url_for('main.export_results', survey_id=survey.id) }}" class="btn btn-sm btn-outline-success float-end">📥 Экспорт CSV</a>
         </div>
         
         {% for question in survey.questions|sort(attribute='order') %}
@@ -60,8 +60,8 @@
         {% endfor %}
         
         <div class="text-center mt-3">
-            <a href="{{ url_for('take_survey', survey_id=survey.id) }}" class="btn btn-primary">📝 Пройти опрос</a>
-            <a href="{{ url_for('index') }}" class="btn btn-secondary">На главную</a>
+            <a href="{{ url_for('main.take_survey', survey_id=survey.id) }}" class="btn btn-primary">📝 Пройти опрос</a>
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">На главную</a>
         </div>
     </div>
 </div>
