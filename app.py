@@ -24,10 +24,8 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Импортируем маршруты
 from routes import *
 
-# Создаём таблицы при запуске
 with app.app_context():
     try:
         db.create_all()

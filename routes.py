@@ -1,7 +1,13 @@
 from flask import render_template, request, redirect, url_for, flash, Response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import app, db
+from flask import render_template, request, redirect, url_for, flash, Response
+from flask_login import login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask import current_app as app
+from models import db, User, Survey, Question, Option, Answer
+from forms import RegistrationForm, LoginForm, SurveyForm
+import json
 from models import User, Survey, Question, Option, Answer
 from forms import RegistrationForm, LoginForm, SurveyForm
 from logger import setup_logger

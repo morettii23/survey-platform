@@ -1,6 +1,6 @@
-from flask import render_template, request, redirect, url_for, flash, jsonify, Blueprint, current_app
+from flask import render_template, request, redirect, url_for, flash, Blueprint
 from flask_login import login_required, current_user
-from models import db, User, Survey, Question, Option, Answer
+from models import db, User, Survey, Answer
 from sqlalchemy import func, desc
 from functools import wraps
 from datetime import datetime, timedelta
