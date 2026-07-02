@@ -1,12 +1,11 @@
 from flask import render_template, request, redirect, url_for, flash, Response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import current_app as app
+from flask import current_app as app  # <-- ЭТО ВАЖНО
 from models import db, User, Survey, Question, Option, Answer
 from forms import RegistrationForm, LoginForm, SurveyForm
 from logger import setup_logger
 import json
-
 logger = setup_logger('routes')
 
 @app.route('/')
@@ -305,3 +304,5 @@ def delete_survey(survey_id):
 # ===== АДМИН-МАРШРУТЫ =====
 from admin_routes import admin_bp
 app.register_blueprint(admin_bp)
+with app.app_context():
+    db.create_all()
