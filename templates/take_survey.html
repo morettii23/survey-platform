@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}{{ survey.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2 class="mb-2">{{ survey.title }}</h2>
+        <p class="text-muted">{{ survey.description }}</p>
+        <hr>
+        
+        <form method="POST" action="{{ url_for('vote', survey_id=survey.id) }}" id="surveyForm">
+            {% for question in survey.questions|sort(attribute='order') %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <strong>Вопрос {{ loop.index }}:</strong> {{ question.text }}
+                        <span class="badge bg-secondary float-end">
+                            {% if question.type == 'single' %}Одиночный выбор
+                            {% elif question.type == 'multiple' %}Множественный выбор
+                            {% else %}Текстовый ответ
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        {% if question.type == 'text' %}
+                            <textarea name="question_{{ question.id }}" class="form-control" rows="3" placeholder="Введите ваш ответ..."></textarea>
+                        {% else %}
+                            {% for option in question.options %}
+                                <div class="form-check">
+                                    {% if question.type == 'single' %}
+                                        <input type="radio" name="question_{{ question.id }}" value="{{ option.id }}" class="form-check-input" id="option_{{ option.id }}">
+                                    {% else %}
+                                        <input type="checkbox" name="question_{{ question.id }}" value="{{ option.id }}" class="form-check-input" id="option_{{ option.id }}">
+                                    {% endif %}
+                                    <label class="form-check-label" for="option_{{ option.id }}">{{ option.text }}</label>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <div class="text-center">
+                <button type="submit" class="btn btn-success btn-lg">✅ Отправить ответы</button>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Назад</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

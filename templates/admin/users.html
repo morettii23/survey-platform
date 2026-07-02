@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Управление пользователями{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>👥 Пользователи</h2>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="GET" class="mb-3">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="Поиск..." value="{{ search or '' }}">
+                <button type="submit" class="btn btn-primary">Найти</button>
+            </div>
+        </form>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Имя</th>
+                        <th>Email</th>
+                        <th>Роль</th>
+                        <th>Статус</th>
+                        <th>Дата</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users.items %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <span class="badge {% if user.role == 'admin' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                    {{ user.role }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if user.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if user.is_active %}Активен{% else %}Заблокирован{% endif %}
+                                </span>
+                            </td>
+                            <td>{{ user.created_at.strftime('%d.%m.%Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('admin_toggle_user', user_id=user.id) }}" class="btn btn-sm {% if user.is_active %}btn-warning{% else %}btn-success{% endif %}">
+                                    {% if user.is_active %}🔒{% else %}🔓{% endif %}
+                                </a>
+                                {% if user.role != 'admin' and user.id != current_user.id %}
+                                    <a href="{{ url_for('admin_delete_user', user_id=user.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Удалить пользователя?')">🗑️</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <nav>
+            <ul class="pagination">
+                {% if users.has_prev %}
+                    <li class="page-item"><a class="page-link" href="?page={{ users.prev_num }}&search={{ search or '' }}">«</a></li>
+                {% endif %}
+                {% for page_num in users.iter_pages() %}
+                    {% if page_num %}
+                        <li class="page-item {% if page_num == users.page %}active{% endif %}">
+                            <a class="page-link" href="?page={{ page_num }}&search={{ search or '' }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                    {% endif %}
+                {% endfor %}
+                {% if users.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ users.next_num }}&search={{ search or '' }}">»</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}

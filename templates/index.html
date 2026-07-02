@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<h1>📋 Все опросы</h1>
+<hr>
+
+<div class="row">
+    {% for survey in surveys %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ survey.title }}</h5>
+                    <p class="card-text text-muted">{{ survey.description[:100] or 'Нет описания' }}</p>
+                    <p><small class="text-muted">👤 {{ survey.creator.username }} • 📅 {{ survey.created_at.strftime('%d.%m.%Y') }}</small></p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{{ url_for('take_survey', survey_id=survey.id) }}" class="btn btn-sm btn-primary">📝 Пройти</a>
+                    <a href="{{ url_for('results', survey_id=survey.id) }}" class="btn btn-sm btn-outline-secondary">📊 Результаты</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                Пока нет опросов. <a href="{{ url_for('create_survey') }}">Создайте первый!</a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<div class="mt-4 text-center">
+    <a href="{{ url_for('create_survey') }}" class="btn btn-success">➕ Создать опрос</a>
+</div>
+{% endblock %}

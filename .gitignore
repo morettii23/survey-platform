@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+instance/
+surveys.db
+.env
+logs/
+.DS_Store
+*.log

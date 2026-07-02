@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Админ-панель{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>🛡️ Админ-панель</h2>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ total_users }}</h5>
+                <p class="card-text">Пользователей</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ total_surveys }}</h5>
+                <p class="card-text">Опросов</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ total_answers }}</h5>
+                <p class="card-text">Всего ответов</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ active_surveys }}</h5>
+                <p class="card-text">Активных опросов</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                📊 Активность за неделю
+            </div>
+            <div class="card-body">
+                <canvas id="weeklyChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                📋 Последние опросы
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for survey in recent_surveys %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ survey.title }}
+                            <span class="badge bg-secondary">{{ survey.created_at.strftime('%d.%m.%Y') }}</span>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item text-muted">Нет опросов</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* eslint-disable */
+(function() {
+    var canvas = document.getElementById('weeklyChart');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    
+    var labels = [];
+    var data = [];
+    {% for stat in date_stats %}
+        labels.push('{{ stat.date }}');
+        data.push({{ stat.count }});
+    {% endfor %}
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Новых опросов',
+                data: data,
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+})();
+</script>
+{% endblock %}

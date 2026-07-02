@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Создать опрос{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2 class="mb-4">➕ Создать новый опрос</h2>
+        
+        <form method="POST" id="surveyForm">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="Введите название опроса") }}
+                {% for error in form.title.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", rows="3", placeholder="Краткое описание опроса") }}
+            </div>
+            
+            <hr>
+            <h5 class="mb-3">❓ Вопросы</h5>
+            
+            <div id="questions-container">
+                <!-- Вопросы будут добавляться сюда через JS -->
+                <div class="question-block card p-3 mb-3">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-2">
+                                <label class="form-label">Текст вопроса</label>
+                                <input type="text" name="question_text_0" class="form-control" placeholder="Например: Какой ваш любимый язык программирования?" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-2">
+                                <label class="form-label">Тип вопроса</label>
+                                <select name="question_type_0" class="form-select">
+                                    <option value="single">Одиночный выбор</option>
+                                    <option value="multiple">Множественный выбор</option>
+                                    <option value="text">Текстовый ответ</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger btn-sm remove-question" style="display: none;">✕</button>
+                        </div>
+                    </div>
+                    
+                    <div class="options-container">
+                        <label class="form-label">Варианты ответов (для одиночного и множественного выбора)</label>
+                        <div class="option-row input-group mb-2">
+                            <input type="text" name="option_text_0_0" class="form-control" placeholder="Вариант 1">
+                            <button type="button" class="btn btn-outline-danger remove-option" style="display: none;">✕</button>
+                        </div>
+                        <div class="option-row input-group mb-2">
+                            <input type="text" name="option_text_0_1" class="form-control" placeholder="Вариант 2">
+                            <button type="button" class="btn btn-outline-danger remove-option" style="display: none;">✕</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary add-option">+ Добавить вариант</button>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <button type="button" class="btn btn-outline-primary" id="add-question">➕ Добавить вопрос</button>
+            </div>
+            
+            <div class="mt-4">
+                {{ form.submit(class="btn btn-success btn-lg") }}
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let questionCounter = 1;
+    
+    // Добавление вопроса
+    document.getElementById('add-question').addEventListener('click', function() {
+        const container = document.getElementById('questions-container');
+        const newQuestion = container.children[0].cloneNode(true);
+        
+        // Обновляем индексы
+        const inputs = newQuestion.querySelectorAll('[name]');
+        inputs.forEach(input => {
+            const name = input.getAttribute('name');
+            if (name) {
+                const parts = name.split('_');
+                if (parts[0] === 'question') {
+                    parts[2] = questionCounter;
+                } else if (parts[0] === 'option') {
+                    parts[2] = questionCounter;
+                    parts[3] = '0';
+                }
+                input.setAttribute('name', parts.join('_'));
+                input.value = '';
+            }
+        });
+        
+        // Обновляем индексы для опций
+        const optionInputs = newQuestion.querySelectorAll('.option-row input');
+        optionInputs.forEach((input, index) => {
+            const name = input.getAttribute('name');
+            if (name) {
+                const parts = name.split('_');
+                parts[3] = index;
+                input.setAttribute('name', parts.join('_'));
+            }
+        });
+        
+        // Показываем кнопки удаления
+        newQuestion.querySelector('.remove-question').style.display = 'inline-block';
+        newQuestion.querySelectorAll('.remove-option').forEach(btn => btn.style.display = 'inline-block');
+        
+        container.appendChild(newQuestion);
+        questionCounter++;
+    });
+    
+    // Удаление вопроса
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-question')) {
+            const questionBlock = e.target.closest('.question-block');
+            if (document.querySelectorAll('.question-block').length > 1) {
+                questionBlock.remove();
+            } else {
+                alert('Должен быть хотя бы один вопрос');
+            }
+        }
+    });
+    
+    // Добавление опции
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('add-option')) {
+            const container = e.target.closest('.question-block').querySelector('.options-container');
+            const optionCount = container.querySelectorAll('.option-row').length;
+            
+            const newOption = container.querySelector('.option-row').cloneNode(true);
+            const input = newOption.querySelector('input');
+            const name = input.getAttribute('name');
+            if (name) {
+                const parts = name.split('_');
+                parts[3] = optionCount;
+                input.setAttribute('name', parts.join('_'));
+                input.value = '';
+            }
+            newOption.querySelector('.remove-option').style.display = 'inline-block';
+            container.appendChild(newOption);
+        }
+    });
+    
+    // Удаление опции
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-option')) {
+            const optionRow = e.target.closest('.option-row');
+            const container = optionRow.closest('.options-container');
+            if (container.querySelectorAll('.option-row').length > 1) {
+                optionRow.remove();
+            } else {
+                alert('Должен быть хотя бы один вариант');
+            }
+        }
+    });
+</script>
+{% endblock %}

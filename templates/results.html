@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Результаты: {{ survey.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <h2 class="mb-2">{{ survey.title }}</h2>
+        <p class="text-muted">{{ survey.description }}</p>
+        <hr>
+        
+        <div class="mb-3">
+            <span class="badge bg-primary">Всего ответов: {{ total_answers }}</span>
+            <a href="{{ url_for('export_results', survey_id=survey.id) }}" class="btn btn-sm btn-outline-success float-end">📥 Экспорт CSV</a>
+        </div>
+        
+        {% for question in survey.questions|sort(attribute='order') %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <strong>Вопрос {{ loop.index }}:</strong> {{ question.text }}
+                    <span class="badge bg-secondary float-end">
+                        {% if question.type == 'single' %}Одиночный выбор
+                        {% elif question.type == 'multiple' %}Множественный выбор
+                        {% else %}Текстовый ответ
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    {% if question.type == 'text' %}
+                        {% set text_answers = question.answers|selectattr('text_answer')|list %}
+                        {% if text_answers %}
+                            <ul class="list-group">
+                                {% for answer in text_answers %}
+                                    <li class="list-group-item">{{ answer.text_answer }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">Нет текстовых ответов</p>
+                        {% endif %}
+                    {% else %}
+                        <div class="row">
+                            <div class="col-md-8">
+                                <canvas id="chart_{{ question.id }}" height="200"></canvas>
+                            </div>
+                            <div class="col-md-4">
+                                <ul class="list-group">
+                                    {% for option in question.options %}
+                                        {% set count = option.answers|length %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            {{ option.text }}
+                                            <span class="badge bg-primary rounded-pill">{{ count }}</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        
+        <div class="text-center mt-3">
+            <a href="{{ url_for('take_survey', survey_id=survey.id) }}" class="btn btn-primary">📝 Пройти опрос</a>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">На главную</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Данные для графиков (передаём через JSON)
+    var chartData = JSON.parse('{{ chart_data|safe }}');
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        for (var questionId in chartData) {
+            if (!chartData.hasOwnProperty(questionId)) continue;
+            
+            var canvas = document.getElementById('chart_' + questionId);
+            if (!canvas) continue;
+            
+            var data = chartData[questionId];
+            
+            new Chart(canvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Количество голосов',
+                        data: data.data,
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
