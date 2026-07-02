@@ -12,7 +12,7 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or current_user.role != 'admin':
             flash('Доступ запрещен. Требуются права администратора.', 'danger')
-            return redirect(url_for('index'))
+            return redirect(url_for('main.index'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -29,8 +29,13 @@ def admin_dashboard():
     date_stats = []
     for i in range(7):
         date = datetime.utcnow() - timedelta(days=i)
-        count = Survey.query.filter(func.date(Survey.created_at) == date.date()).count()
-        date_stats.append({'date': date.strftime('%d.%m'), 'count': count})
+        count = Survey.query.filter(
+            func.date(Survey.created_at) == date.date()
+        ).count()
+        date_stats.append({
+            'date': date.strftime('%d.%m'),
+            'count': count
+        })
     
     return render_template(
         'admin/dashboard.html',
@@ -51,7 +56,10 @@ def admin_users():
     search = request.args.get('search', '')
     query = User.query
     if search:
-        query = query.filter((User.username.contains(search)) | (User.email.contains(search)))
+        query = query.filter(
+            (User.username.contains(search)) | 
+            (User.email.contains(search))
+        )
     users = query.order_by(User.created_at.desc()).paginate(page=page, per_page=per_page)
     return render_template('admin/users.html', users=users, search=search)
 
@@ -61,11 +69,12 @@ def admin_users():
 def admin_toggle_user(user_id):
     user = User.query.get_or_404(user_id)
     if user.id == current_user.id:
-        flash('Нельзя заблокировать себя', 'danger')
+        flash('Нельзя заблокировать самого себя', 'danger')
         return redirect(url_for('admin.admin_users'))
     user.is_active = not user.is_active
     db.session.commit()
-    flash(f'Пользователь {user.username} {"активирован" if user.is_active else "заблокирован"}', 'success')
+    status = 'активирован' if user.is_active else 'заблокирован'
+    flash(f'Пользователь {user.username} {status}', 'success')
     return redirect(url_for('admin.admin_users'))
 
 @admin_bp.route('/user/<int:user_id>/delete')
@@ -73,12 +82,15 @@ def admin_toggle_user(user_id):
 @admin_required
 def admin_delete_user(user_id):
     user = User.query.get_or_404(user_id)
-    if user.id == current_user.id or user.role == 'admin':
-        flash('Нельзя удалить этого пользователя', 'danger')
+    if user.id == current_user.id:
+        flash('Нельзя удалить самого себя', 'danger')
+        return redirect(url_for('admin.admin_users'))
+    if user.role == 'admin':
+        flash('Нельзя удалить администратора', 'danger')
         return redirect(url_for('admin.admin_users'))
     db.session.delete(user)
     db.session.commit()
-    flash('Пользователь удалён', 'success')
+    flash('Пользователь удален', 'success')
     return redirect(url_for('admin.admin_users'))
 
 @admin_bp.route('/surveys')
@@ -101,5 +113,5 @@ def admin_delete_survey(survey_id):
     survey = Survey.query.get_or_404(survey_id)
     db.session.delete(survey)
     db.session.commit()
-    flash('Опрос удалён', 'success')
+    flash('Опрос удален', 'success')
     return redirect(url_for('admin.admin_surveys'))
