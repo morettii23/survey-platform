@@ -43,17 +43,7 @@
 </div>
 
 <div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                📊 Активность за неделю
-            </div>
-            <div class="card-body">
-                <canvas id="weeklyChart" height="200"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
+    <div class="col-md-12">
         <div class="card">
             <div class="card-header">
                 📋 Последние опросы
@@ -73,41 +63,4 @@
         </div>
     </div>
 </div>
-
-<script>
-/* eslint-disable */
-(function() {
-    var canvas = document.getElementById('weeklyChart');
-    if (!canvas) return;
-    var ctx = canvas.getContext('2d');
-    
-    var labels = [];
-    var data = [];
-    {% for stat in date_stats %}
-        labels.push('{{ stat.date }}');
-        data.push({{ stat.count }});
-    {% endfor %}
-    
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Новых опросов',
-                data: data,
-                borderColor: 'rgb(54, 162, 235)',
-                backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { display: false }
-            }
-        }
-    });
-})();
-</script>
 {% endblock %}
