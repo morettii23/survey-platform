@@ -5,23 +5,11 @@ from flask_migrate import Migrate
 from models import db, User
 import os
 from dotenv import load_dotenv
-from logger import setup_logger
-from app import app, db
-
-# Добавь ЭТУ функцию
-def init_db():
-    with app.app_context():
-        db.create_all()
-        print("✅ База данных создана")
-
-init_db()
 
 load_dotenv()
 
-logger = setup_logger('app')
-
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'super-secret-key-12345')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///surveys.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -36,17 +24,16 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@login_manager.unauthorized_handler
-def unauthorized():
-    from flask import flash, redirect, url_for
-    flash('Пожалуйста, войдите для доступа', 'warning')
-    return redirect(url_for('login'))
-
+# Импортируем маршруты
 from routes import *
 
-if __name__ == '__main__':
-    with app.app_context():
+# Создаём таблицы при запуске
+with app.app_context():
+    try:
         db.create_all()
-        logger.info('✅ База данных инициализирована')
-    logger.info(f'🚀 Сервер запущен на http://127.0.0.1:5000')
-    app.run(debug=os.getenv('FLASK_ENV') == 'development')
+        print('✅ База данных готова')
+    except Exception as e:
+        print(f'⚠️ Ошибка БД: {e}')
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000)
