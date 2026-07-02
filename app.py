@@ -17,17 +17,17 @@ db.init_app(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'main.login'
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Импорт маршрутов
-from routes import *
-
-# Регистрация админ-блюпринта
+# Импортируем блюпринты и регистрируем
+from routes import main_bp
 from admin_routes import admin_bp
+
+app.register_blueprint(main_bp)
 app.register_blueprint(admin_bp)
 
 # Создание БД и админа

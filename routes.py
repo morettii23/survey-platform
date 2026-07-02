@@ -1,14 +1,16 @@
-from flask import render_template, request, redirect, url_for, flash, Response
+from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import current_app as app  # <-- ЭТО ВАЖНО
 from models import db, User, Survey, Question, Option, Answer
 from forms import RegistrationForm, LoginForm, SurveyForm
 from logger import setup_logger
 import json
+
 logger = setup_logger('routes')
 
-@app.route('/')
+main_bp = Blueprint('main', __name__)
+
+@main_bp.route('/')
 def index():
     try:
         surveys = Survey.query.filter_by(is_active=True).all()
@@ -18,11 +20,11 @@ def index():
         flash('Произошла ошибка загрузки опросов', 'danger')
         return render_template('index.html', surveys=[])
 
-@app.route('/register', methods=['GET', 'POST'])
+@main_bp.route('/register', methods=['GET', 'POST'])
 def register():
     try:
         if current_user.is_authenticated:
-            return redirect(url_for('index'))
+            return redirect(url_for('main.index'))
         
         form = RegistrationForm()
         if form.validate_on_submit():
@@ -36,7 +38,7 @@ def register():
             db.session.commit()
             logger.info(f'Новый пользователь: {user.email}')
             flash('Регистрация прошла успешно!', 'success')
-            return redirect(url_for('login'))
+            return redirect(url_for('main.login'))
         
         return render_template('register.html', form=form)
     except Exception as e:
@@ -44,11 +46,11 @@ def register():
         flash('Ошибка регистрации', 'danger')
         return render_template('register.html', form=form)
 
-@app.route('/login', methods=['GET', 'POST'])
+@main_bp.route('/login', methods=['GET', 'POST'])
 def login():
     try:
         if current_user.is_authenticated:
-            return redirect(url_for('index'))
+            return redirect(url_for('main.index'))
         
         form = LoginForm()
         if form.validate_on_submit():
@@ -57,7 +59,7 @@ def login():
                 login_user(user)
                 logger.info(f'Вход: {user.email}')
                 flash('Добро пожаловать!', 'success')
-                return redirect(url_for('index'))
+                return redirect(url_for('main.index'))
             else:
                 flash('Неверный email или пароль', 'danger')
         
@@ -67,19 +69,19 @@ def login():
         flash('Ошибка входа', 'danger')
         return render_template('login.html', form=form)
 
-@app.route('/logout')
+@main_bp.route('/logout')
 @login_required
 def logout():
     try:
         logout_user()
         flash('Вы вышли из системы', 'info')
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
     except Exception as e:
         logger.error(f'Ошибка в logout: {str(e)}')
         flash('Ошибка выхода', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
 
-@app.route('/create', methods=['GET', 'POST'])
+@main_bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def create_survey():
     try:
@@ -129,7 +131,7 @@ def create_survey():
             db.session.commit()
             logger.info(f'Создан опрос: {survey.title} (ID: {survey.id})')
             flash('Опрос создан!', 'success')
-            return redirect(url_for('index'))
+            return redirect(url_for('main.index'))
         
         return render_template('new_survey.html', form=form)
     except Exception as e:
@@ -137,7 +139,7 @@ def create_survey():
         flash('Ошибка создания опроса', 'danger')
         return render_template('new_survey.html', form=form)
 
-@app.route('/my_surveys')
+@main_bp.route('/my_surveys')
 @login_required
 def my_surveys():
     try:
@@ -148,20 +150,20 @@ def my_surveys():
         flash('Ошибка загрузки опросов', 'danger')
         return render_template('my_surveys.html', surveys=[])
 
-@app.route('/survey/<int:survey_id>')
+@main_bp.route('/survey/<int:survey_id>')
 def take_survey(survey_id):
     try:
         survey = Survey.query.get_or_404(survey_id)
         if not survey.is_active:
             flash('Опрос закрыт', 'warning')
-            return redirect(url_for('index'))
+            return redirect(url_for('main.index'))
         return render_template('take_survey.html', survey=survey)
     except Exception as e:
         logger.error(f'Ошибка в take_survey: {str(e)}')
         flash('Опрос не найден', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
 
-@app.route('/survey/<int:survey_id>/vote', methods=['POST'])
+@main_bp.route('/survey/<int:survey_id>/vote', methods=['POST'])
 def vote(survey_id):
     try:
         survey = Survey.query.get_or_404(survey_id)
@@ -173,7 +175,7 @@ def vote(survey_id):
             ).first()
             if existing:
                 flash('Вы уже проходили этот опрос', 'warning')
-                return redirect(url_for('results', survey_id=survey_id))
+                return redirect(url_for('main.results', survey_id=survey_id))
         
         for question in survey.questions:
             data = request.form.getlist(f'question_{question.id}')
@@ -203,13 +205,13 @@ def vote(survey_id):
         db.session.commit()
         logger.info(f'Проголосовали в опросе {survey_id}')
         flash('Спасибо!', 'success')
-        return redirect(url_for('results', survey_id=survey_id))
+        return redirect(url_for('main.results', survey_id=survey_id))
     except Exception as e:
         logger.error(f'Ошибка в vote: {str(e)}')
         flash('Ошибка отправки ответов', 'danger')
-        return redirect(url_for('take_survey', survey_id=survey_id))
+        return redirect(url_for('main.take_survey', survey_id=survey_id))
 
-@app.route('/survey/<int:survey_id>/results')
+@main_bp.route('/survey/<int:survey_id>/results')
 def results(survey_id):
     try:
         survey = Survey.query.get_or_404(survey_id)
@@ -232,9 +234,9 @@ def results(survey_id):
     except Exception as e:
         logger.error(f'Ошибка в results: {str(e)}')
         flash('Ошибка загрузки результатов', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
 
-@app.route('/survey/<int:survey_id>/export')
+@main_bp.route('/survey/<int:survey_id>/export')
 def export_results(survey_id):
     try:
         import csv
@@ -262,42 +264,41 @@ def export_results(survey_id):
     except Exception as e:
         logger.error(f'Ошибка в export_results: {str(e)}')
         flash('Ошибка экспорта', 'danger')
-        return redirect(url_for('results', survey_id=survey_id))
+        return redirect(url_for('main.results', survey_id=survey_id))
 
-@app.route('/survey/<int:survey_id>/toggle')
+@main_bp.route('/survey/<int:survey_id>/toggle')
 @login_required
 def toggle_survey(survey_id):
     try:
         survey = Survey.query.get_or_404(survey_id)
         if survey.creator_id != current_user.id:
             flash('Нет прав', 'danger')
-            return redirect(url_for('my_surveys'))
+            return redirect(url_for('main.my_surveys'))
         
         survey.is_active = not survey.is_active
         db.session.commit()
         status = 'открыт' if survey.is_active else 'закрыт'
         flash(f'Опрос {status}', 'success')
-        return redirect(url_for('my_surveys'))
+        return redirect(url_for('main.my_surveys'))
     except Exception as e:
         logger.error(f'Ошибка в toggle_survey: {str(e)}')
         flash('Ошибка', 'danger')
-        return redirect(url_for('my_surveys'))
+        return redirect(url_for('main.my_surveys'))
 
-@app.route('/survey/<int:survey_id>/delete')
+@main_bp.route('/survey/<int:survey_id>/delete')
 @login_required
 def delete_survey(survey_id):
     try:
         survey = Survey.query.get_or_404(survey_id)
         if survey.creator_id != current_user.id:
             flash('Нет прав', 'danger')
-            return redirect(url_for('my_surveys'))
+            return redirect(url_for('main.my_surveys'))
         
         db.session.delete(survey)
         db.session.commit()
         flash('Опрос удалён', 'success')
-        return redirect(url_for('my_surveys'))
+        return redirect(url_for('main.my_surveys'))
     except Exception as e:
         logger.error(f'Ошибка в delete_survey: {str(e)}')
         flash('Ошибка удаления', 'danger')
-        return redirect(url_for('my_surveys'))
-    
+        return redirect(url_for('main.my_surveys'))
