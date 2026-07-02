@@ -23,27 +23,33 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# === ВАЖНО: СОЗДАЁМ АДМИНА ===
-with app.app_context():
-    db.create_all()
-    admin = User.query.filter_by(email='tuxigoww@bk.ru').first()
-    if not admin:
-        admin = User(
-            username='admin',
-            email='tuxigoww@bk.ru',
-            password=generate_password_hash('Admin1234'),
-            role='admin'
-        )
-        db.session.add(admin)
-        db.session.commit()
-        print('✅ Админ создан')
-    else:
-        admin.role = 'admin'
-        admin.password = generate_password_hash('Admin1234')
-        db.session.commit()
-        print('✅ Админ обновлён')
-
+# === ИМПОРТ МАРШРУТОВ ПОСЛЕ СОЗДАНИЯ app ===
 from routes import *
+
+# === СОЗДАНИЕ/ОБНОВЛЕНИЕ АДМИНА ===
+with app.app_context():
+    try:
+        db.create_all()
+        print('✅ База данных готова')
+
+        admin = User.query.filter_by(email='tuxigoww@bk.ru').first()
+        if admin:
+            admin.password = generate_password_hash('Admin1234')
+            admin.role = 'admin'
+            db.session.commit()
+            print(f'✅ Админ обновлён: {admin.email}')
+        else:
+            admin = User(
+                username='admin',
+                email='tuxigoww@bk.ru',
+                password=generate_password_hash('Admin1234'),
+                role='admin'
+            )
+            db.session.add(admin)
+            db.session.commit()
+            print('✅ Админ создан: tuxigoww@bk.ru / Admin1234')
+    except Exception as e:
+        print(f'⚠️ Ошибка: {e}')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
