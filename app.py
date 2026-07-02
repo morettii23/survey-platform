@@ -25,22 +25,36 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Импортируем маршруты
-try:
-    from routes import *
-    print('✅ Маршруты загружены')
-except Exception as e:
-    print(f'❌ Ошибка загрузки маршрутов: {e}')
-    sys.exit(1)
+from routes import *
 
-# Создаём таблицы
 with app.app_context():
     try:
         db.create_all()
         print('✅ База данных готова')
+
+        # Автоматически создаём админа
+        from werkzeug.security import generate_password_hash
+        admin = User.query.filter_by(email='tuxigoww@bk.ru').first()
+        if not admin:
+            admin = User(
+                username='admin',
+                email='tuxigoww@bk.ru',
+                password=generate_password_hash('Admin1234'),
+                role='admin'
+            )
+            db.session.add(admin)
+            db.session.commit()
+            print('✅ Админ создан: tuxigoww@bk.ru / Admin1234')
+        else:
+            if admin.role != 'admin':
+                admin.role = 'admin'
+                db.session.commit()
+                print(f'✅ Пользователь {admin.email} теперь админ')
+            else:
+                print('ℹ️ Админ уже существует')
+
     except Exception as e:
-        print(f'⚠️ Ошибка БД: {e}')
-        sys.exit(1)
+        print(f'⚠️ Ошибка при инициализации БД: {e}')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
