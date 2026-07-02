@@ -302,5 +302,6 @@ def delete_survey(survey_id):
         return redirect(url_for('my_surveys'))
 
 # ===== АДМИН-МАРШРУТЫ =====
+# ===== АДМИН-МАРШРУТЫ =====
 from admin_routes import admin_bp
 app.register_blueprint(admin_bp)
