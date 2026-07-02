@@ -24,7 +24,7 @@
     {% else %}
         <div class="col-12">
             <div class="alert alert-info">
-                Пока нет опросов. <a href="{{ url_for('main.') }}">Создайте первый!</a>
+               <a href="{{ url_for('main.create_survey') }}">Создайте первый!</a>
             </div>
         </div>
     {% endfor %}
