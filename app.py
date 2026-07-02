@@ -23,18 +23,18 @@ login_manager.login_view = 'login'
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Импортируем маршруты
+# Импорт маршрутов
 from routes import *
 
-# Регистрируем админ-блюпринт (используя реальный объект app, не current_app)
+# Регистрация админ-блюпринта
 from admin_routes import admin_bp
 app.register_blueprint(admin_bp)
 
-# Создаём таблицы и админа
+# Создание БД и админа
 with app.app_context():
     try:
         db.create_all()
-        print('✅ База данных готова (SQLite)')
+        print('✅ База данных готова')
 
         admin = User.query.filter_by(email='tuxigoww@bk.ru').first()
         if admin:
